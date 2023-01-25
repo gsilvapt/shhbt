@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from shhbt.session import Session
-from shhbt.signatures import SimpleSignature, PatternSignature
+from lib.scanner import Scanner
+from lib.signatures import SimpleSignature, PatternSignature
 
 
 class TestUtilsSignatures(TestCase):
@@ -29,7 +29,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_extension(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_extension_match.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
 
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
@@ -47,7 +47,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_filename(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_filename_match.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
                 match, part = sig.match(
@@ -64,7 +64,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_path_part(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_path_match.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
 
@@ -82,7 +82,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_regex_in_path(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_path_regex.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
 
@@ -99,7 +99,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_regex_in_extension(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_extension_regex.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
 
@@ -116,7 +116,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_regex_in_filename(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_filename_regex.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
 
@@ -133,7 +133,7 @@ class TestUtilsSignatures(TestCase):
     def test_can_match_regex_in_content(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_content_regex.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
                 self.assertEqual(1, len(session.signatures))
                 sig = session.signatures[0]
 
@@ -150,7 +150,7 @@ class TestUtilsSignatures(TestCase):
     def test_handles_weird_config_nicely(self):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_unknown_part.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)
+                session = Scanner(f)
 
                 assert len(session.signatures) == 2
 
@@ -184,7 +184,7 @@ class TestUtilsSignatures(TestCase):
     def test_parsing_back_signatures_returns_error(self, log_mock):
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config_with_invalid_regex.yaml"}):
             with open(file=os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as f:
-                session = Session(f)  # GIVEN a config file with a single, yet invalid regex
+                session = Scanner(f)  # GIVEN a config file with a single, yet invalid regex
 
             # THEN an error is catched and logged
             log_mock.assert_called_with(

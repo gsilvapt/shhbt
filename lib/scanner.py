@@ -8,7 +8,7 @@ from .blacklists import BlacklistItem, Extension, Path
 from .signatures import Signature, SimpleSignature, PatternSignature
 
 
-class Session:
+class Scanner:
     def __init__(self, config_content):
         self._logger = logging.getLogger(__name__ + "." + self.__module__.split(".")[-1])
         self._config = self._load_config(config_content)

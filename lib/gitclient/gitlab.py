@@ -5,27 +5,32 @@ from multiprocessing.pool import ThreadPool
 from os.path import splitext
 from typing import Any, Dict, List, Optional, Tuple
 
-from shhbt.data import Issue
-from shhbt.gitclient import CommitStatus, GitClient, Options
-from shhbt.session import Session
-from shhbt.utils import extract_additions
+from lib.data import Issue
+from lib.gitclient import CommitStatus, GitClient, Options
+from lib.scanner import Scanner
+from lib.utils import extract_additions
 
 
 def handle_gitlab_event(event_body: Dict[str, Any]):
+    """
+    handle_gitlab_event encapsulates all the necessary logic to process an incoming GitLab webhook request.
+    In the context of shhbt, this means a new merge request was probably open and the code is going to be scanned for
+    secrets and other sensitive data.
+    """
     gitlab_token = os.getenv("GITLAB_TOKEN", None)
     gitlab_host = os.getenv("GITLAB_URI", None)
 
-    _cli = _GitLab(hostname=gitlab_host, token=gitlab_token)
+    _client = _GitLab(hostname=gitlab_host, token=gitlab_token)
 
-    exists, content = _cli.config_in_repo(proj_id=event_body.get("project", {}).get("id"))
+    exists, content = _client.config_in_repo(proj_id=event_body.get("project", {}).get("id"))
     if exists:
-        _cli.session = Session(config_content=content)
+        _client.scanner = Scanner(config_content=content)
 
     else:
         with open(file=os.getenv("CONFIG_LOCATION", "NOT_THIS_ONE"), mode="r") as f:
-            _cli.session = Session(config_content=f)
+            _client.scanner = Scanner(config_content=f)
 
-    _cli.handle_event(event_body)
+    _client.handle_event(event_body)
 
 
 class _GitLab(GitClient):
@@ -33,7 +38,7 @@ class _GitLab(GitClient):
         super().__init__(*args, **kwargs)
         self.http_session.headers.update({"PRIVATE-TOKEN": self.token})
         self.last_request_at = datetime.now() - timedelta(hours=1)
-        self.session = None if kwargs.get("session") is None else kwargs.get("session")
+        self.scanner = None if kwargs.get("scanner") is None else kwargs.get("scanner")
         self.options = Options(**kwargs)
 
     def config_in_repo(self, proj_id: str) -> Tuple[bool, Optional[str]]:
@@ -148,7 +153,7 @@ class _GitLab(GitClient):
         # extract extension from filename. Index 1 should be the extension
         extension = splitext(filename)[1].lstrip(".")
 
-        for item in self.session.blacklists:
+        for item in self.scanner.blacklists:
             if item.match_item(file_path=new_path, extension=extension):
                 return [None]
 
@@ -156,7 +161,7 @@ class _GitLab(GitClient):
 
         hits: List[Issue] = []
 
-        for signature in self.session.signatures:
+        for signature in self.scanner.signatures:
             if signature.part == signature.PART_CONTENTS:
                 for add in additions:
                     matches = signature.get_content_matches(content=add)

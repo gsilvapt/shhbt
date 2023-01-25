@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from shhbt.utils import extract_additions
+from lib.utils import extract_additions
 
 
 class TestUtilsSignatures(TestCase):

@@ -5,8 +5,6 @@ from typing import Any, Dict, Optional, Tuple
 
 import requests
 
-from shhbt.session import Session
-
 
 class CommitStatus(Enum):
     SUCCESS = "success"

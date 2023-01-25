@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from shhbt.blacklists import Extension, Path
+from lib.blacklists import Extension, Path
 
 
 class TestUtilsConfig(TestCase):

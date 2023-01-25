@@ -3,8 +3,8 @@ import os
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from shhbt.gitclient import CommitStatus
-from shhbt.server import create_flask_app
+from lib.gitclient import CommitStatus
+from server.listener import create_flask_app
 from tests.data import api_json_res
 
 
@@ -23,7 +23,7 @@ class TestIntegrations(TestCase):
         _app = create_flask_app()
         self.test_client = _app.test_client()
 
-    @patch("shhbt.gitclient.gitlab._GitLab._update_commit_status")
+    @patch("lib.gitclient.gitlab._GitLab._update_commit_status")
     @patch("requests.Session.request")
     @patch.dict("os.environ", test_env)
     def test_unsafe_gitlab_returns_200(self, req_mock, status_mock):
@@ -40,7 +40,7 @@ class TestIntegrations(TestCase):
             ((api_json_res.EVENT_FOR_UNSAFE.get("project").get("id"), "test_sha", CommitStatus.FAILED),),
         ]
 
-    @patch("shhbt.gitclient.gitlab._GitLab._update_commit_status")
+    @patch("lib.gitclient.gitlab._GitLab._update_commit_status")
     @patch("requests.Session.request")
     @patch.dict("os.environ", test_env)
     def test_skips_and_succeeds_when_deleted_file(self, req_mock, status_mock):

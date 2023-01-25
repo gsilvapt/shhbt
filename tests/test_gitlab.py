@@ -4,21 +4,21 @@ from unittest.mock import patch
 
 import pytest
 
-from shhbt.gitclient.gitlab import handle_gitlab_event, _GitLab, CommitStatus
-from shhbt.session import Session
+from lib.gitclient.gitlab import handle_gitlab_event, _GitLab, CommitStatus
+from lib.scanner import Scanner
 from tests.data import api_json_res
 
 
 class TestGitLabIntegration(TestCase):
     test_dir_data = f"{os.path.dirname(__file__)}/data"
 
-    gitlab_config_patch = patch("shhbt.gitclient.gitlab._GitLab.config_in_repo")
+    gitlab_config_patch = patch("lib.gitclient.gitlab._GitLab.config_in_repo")
     gitlab_config_mock = None
 
-    gitlab_change_status_patch = patch("shhbt.gitclient.gitlab._GitLab._update_commit_status")
+    gitlab_change_status_patch = patch("lib.gitclient.gitlab._GitLab._update_commit_status")
     gitlab_change_status_mock = None
 
-    diff_patch = patch("shhbt.gitclient.gitlab._GitLab._fetch_diff")
+    diff_patch = patch("lib.gitclient.gitlab._GitLab._fetch_diff")
     diff_mock = None
 
     test_env = {
@@ -155,7 +155,7 @@ class TestGitLabIntegration(TestCase):
         exists, content = cli.config_in_repo("123")
         assert exists is True
 
-        cli.session = Session(content)
+        cli.session = Scanner(content)
 
         # THEN the cli's session has empty signatures and blacklists
         assert cli.session.signatures == []

@@ -4,13 +4,13 @@ from unittest.mock import patch
 
 import pytest
 
-from shhbt.session import Session
+from lib.scanner import Scanner
 
 
-class TestSession(TestCase):
+class TestScanner(TestCase):
     test_dir_data = f"{os.path.dirname(__file__)}/data"
 
-    @patch("shhbt.session.Session._parse_signatures")
+    @patch("lib.scanner.Scanner._parse_signatures")
     def test_loads_config_if_it_exists(self, _):
         # Override settings location for testing purposes
         with patch("os.environ", {"SCANNER_CONFIG_LOCATION": f"{self.test_dir_data}/config.yaml"}):
@@ -26,11 +26,11 @@ class TestSession(TestCase):
                 assert "" == line2
                 file.seek(init_pos)
 
-                # WHEN the session class is instanciated
-                session = Session(file)
+                # WHEN the scanner class is instanciated
+                scanner = Scanner(file)
 
-                # THEN the session object should contain a config attribute with the same fields
-                assert session.signatures is not None
+                # THEN the scanner object should contain a config attribute with the same fields
+                assert scanner.signatures is not None
 
     def test_raises_error_if_tokens_missing(self):
         # Override settings location for testing purposes
@@ -38,10 +38,10 @@ class TestSession(TestCase):
             # GIVEN a config file missing gitlab tokens
             assert os.path.exists(os.getenv("SCANNER_CONFIG_LOCATION")) is False
 
-            # WHEN the session class is instanciated
+            # WHEN the scanner class is instanciated
             # THEN an AttributeError is raised because the file does not exist
             with pytest.raises(FileNotFoundError), open(os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as file:
-                Session(file)
+                Scanner(file)
 
     def test_can_parse_many_signatures(self):
         # Override settings location for testing purposes
@@ -49,10 +49,10 @@ class TestSession(TestCase):
             # GIVEN a config file with some signatures
             assert os.path.exists(os.getenv("SCANNER_CONFIG_LOCATION")) is True
 
-            # WHEN the session is initialized
+            # WHEN the scanner is initialized
             with open(os.getenv("SCANNER_CONFIG_LOCATION"), mode="r") as file:
-                session = Session(file)
+                scanner = Scanner(file)
 
             # THEN it should create 6 signatures
-            assert session.signatures is not None
-            assert len(session.signatures) == 6
+            assert scanner.signatures is not None
+            assert len(scanner.signatures) == 6
